@@ -13,6 +13,7 @@ services:
   - type: web
     name: animi-api
     runtime: docker
+    plan: free
     rootDir: animface-backend
     dockerfilePath: ./Dockerfile
     autoDeploy: true
