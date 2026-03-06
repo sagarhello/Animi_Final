@@ -3,6 +3,26 @@ from typing import List
 from functools import lru_cache
 
 
+def _normalize_postgres_url(url: str, async_mode: bool) -> str:
+    if not url:
+        return url
+
+    normalized = str(url).strip()
+    if normalized.startswith("postgres://"):
+        normalized = "postgresql://" + normalized[len("postgres://"):]
+
+    if async_mode:
+        if normalized.startswith("postgresql+asyncpg://"):
+            return normalized
+        if normalized.startswith("postgresql://"):
+            return normalized.replace("postgresql://", "postgresql+asyncpg://", 1)
+    else:
+        if normalized.startswith("postgresql+asyncpg://"):
+            return normalized.replace("postgresql+asyncpg://", "postgresql://", 1)
+
+    return normalized
+
+
 class Settings(BaseSettings):
     # App
     APP_ENV: str = "development"
@@ -39,6 +59,13 @@ class Settings(BaseSettings):
     # AI Pipeline
     ANIME_MODEL: str = "mock"
     ANIME_WORKER_CONCURRENCY: int = 2
+
+    def model_post_init(self, __context) -> None:
+        # Hosting providers often expose postgres:// URLs. Normalize once for both engines.
+        async_source = self.DATABASE_URL or self.SYNC_DATABASE_URL
+        sync_source = self.SYNC_DATABASE_URL or self.DATABASE_URL
+        self.DATABASE_URL = _normalize_postgres_url(async_source, async_mode=True)
+        self.SYNC_DATABASE_URL = _normalize_postgres_url(sync_source, async_mode=False)
 
     @property
     def allowed_origins_list(self) -> List[str]:
