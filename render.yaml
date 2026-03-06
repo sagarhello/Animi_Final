@@ -17,7 +17,6 @@ services:
     dockerfilePath: ./Dockerfile
     autoDeploy: true
     healthCheckPath: /health
-    startCommand: bash ./start-render.sh
     envVars:
       - key: APP_ENV
         value: production

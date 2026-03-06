@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create directories
-RUN mkdir -p uploads/originals uploads/animated logs
+RUN mkdir -p uploads/originals uploads/animated logs \
+    && chmod +x start-render.sh
 
 EXPOSE 8000
+
+CMD ["bash", "./start-render.sh"]
